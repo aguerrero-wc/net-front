@@ -7,6 +7,9 @@ import {
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 
+import "video.js/dist/video-js.css";
+import "@videojs/themes/dist/forest/index.css"; 
+
 import "./tailwind.css";
 
 export const links: LinksFunction = () => [
