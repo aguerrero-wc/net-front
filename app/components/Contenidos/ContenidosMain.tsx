@@ -1,4 +1,4 @@
-// components/ContenidosMain.tsx
+import { Link } from "@remix-run/react";
 import { useState } from "react";
 
 export default function ContenidosMain() {
@@ -17,7 +17,8 @@ export default function ContenidosMain() {
       usuario: "Dr. María González",
       vistas: 1240,
       descripcion: "Testimonio del Dr. David Gallo sobre los procedimientos institucionales y protocolos de atención médica.",
-      url: "https://miapp.com/videos/indc-testimonio-david-gallo"
+      url: "https://miapp.com/videos/indc-testimonio-david-gallo",
+      viewUrl: "https://localhost:5173/dashboard/contents/videos/1234"
     },
     {
       id: 2,
@@ -31,7 +32,8 @@ export default function ContenidosMain() {
       usuario: "Ana Rodríguez",
       vistas: 892,
       descripcion: "Video educativo que explica el proceso y destino de la sangre donada en nuestros centros médicos.",
-      url: "https://miapp.com/videos/hsj-sangre-donacion"
+      url: "https://miapp.com/videos/hsj-sangre-donacion",
+      viewUrl: "https://localhost:5173/dashboard/contents/videos/1234"
     },
     {
       id: 3,
@@ -45,7 +47,8 @@ export default function ContenidosMain() {
       usuario: "Carlos Mendoza",
       vistas: 2156,
       descripcion: "Presentación institucional del Centro de Control de Enfermedades con estadísticas y proyecciones 2025.",
-      url: "https://miapp.com/videos/cdc-institucional-2025"
+      url: "https://miapp.com/videos/cdc-institucional-2025",
+      viewUrl: "https://localhost:5173/dashboard/contents/videos/1234"
     },
     {
       id: 4,
@@ -59,7 +62,8 @@ export default function ContenidosMain() {
       usuario: "Laura Jiménez",
       vistas: 567,
       descripcion: "Información sobre los servicios y beneficios de la asociación de usuarios COLINA.",
-      url: "https://miapp.com/videos/colina-asociacion"
+      url: "https://miapp.com/videos/colina-asociacion",
+      viewUrl: "https://localhost:5173/dashboard/contents/videos/1234"
     },
     {
       id: 5,
@@ -73,7 +77,8 @@ export default function ContenidosMain() {
       usuario: "Roberto Silva",
       vistas: 1893,
       descripcion: "Guía completa sobre los derechos y deberes de los usuarios del sistema de salud CDC.",
-      url: "https://miapp.com/videos/cdc-asociacion-usuarios"
+      url: "https://miapp.com/videos/cdc-asociacion-usuarios",
+      viewUrl: "http://localhost:5173/dashboard/contents/videos/45"
     },
     {
       id: 6,
@@ -87,7 +92,8 @@ export default function ContenidosMain() {
       usuario: "Patricia León",
       vistas: 734,
       descripcion: "Protocolo actualizado de prevención de riesgos laborales y medidas de seguridad 2025.",
-      url: "https://miapp.com/videos/fvl-prevencion-riesgo"
+      url: "https://miapp.com/videos/fvl-prevencion-riesgo",
+      viewUrl: "http://localhost:5173/dashboard/contents/videos/12"
     },
     {
       id: 7,
@@ -101,7 +107,8 @@ export default function ContenidosMain() {
       usuario: "Dr. Fernando Ruiz",
       vistas: 1045,
       descripcion: "Manual de prevención de caídas para pacientes y personal médico con ejercicios prácticos.",
-      url: "https://miapp.com/videos/fvl-prevencion-caidas"
+      url: "https://miapp.com/videos/fvl-prevencion-caidas",
+      viewUrl: "http://localhost:5173/dashboard/contents/videos/14"
     },
     {
       id: 8,
@@ -111,11 +118,12 @@ export default function ContenidosMain() {
       tamaño: "7.81 MB",
       fecha: "21/05/2025",
       validado: true,
-      thumbnail: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=200&h=120&fit=crop&crop=center",
+      thumbnail: "http://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=200&h=120&fit=crop&crop=center",
       usuario: "Sandra Torres",
       vistas: 423,
       descripcion: "Nuevos mecanismos de participación ciudadana en programas de salud y bienestar social.",
-      url: "https://miapp.com/videos/fvl-participacion"
+      url: "https://miapp.com/videos/fvl-participacion",
+      viewUrl: "http://localhost:5173/dashboard/contents/videos/3"
     }
   ];
 
@@ -214,12 +222,15 @@ export default function ContenidosMain() {
               </button>
             </div>
 
-            <button className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Nuevo Contenido
-            </button>
+            <Link
+              to="/dashboard/contents/videos/new"
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center gap-2"
+                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Nuevo Contenido
+            </Link>
           </div>
         </div>
 
@@ -320,9 +331,15 @@ export default function ContenidosMain() {
                     <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                       Editar
                     </button>
-                    <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                    {/* <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                       Ver
-                    </button>
+                    </button> */}
+                    <Link
+                      to={contenido.viewUrl}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center"
+                    >
+                      Ver
+                    </Link>
                   </div>
                 </div>
               </div>

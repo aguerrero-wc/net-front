@@ -1,26 +1,25 @@
-// components/Sidebar.tsx
 import { Link, useLocation } from "@remix-run/react";
 
 export default function Sidebar() {
   const location = useLocation();
   
   const menuItems = [
-    { icon: "🏠", label: "Home", count: 10, href: "/" },
-    { icon: "🤝", label: "Clientes", count: 10, href: "/clients" },
-    { icon: "📦", label: "Winbox", count: 10, href: "/winboxs" },
-    { icon: "📺", label: "Canales", count: null, href: "/channels" },
-    { icon: "🎬", label: "Contenidos", count: null, href: "/contents" },
-    { icon: "📰", label: "Noticias", count: null, href: "/news" },
-    { icon: "📡", label: "Emisiones especificas", count: 2, href: "/emisiones" },
-    { icon: "⚙️", label: "Settings", count: null, href: "/settings" },
-    { icon: "📊", label: "Estadisticas", count: 2, href: "/stats" },
-    { icon: "🔌", label: "APIs", count: null, href: "/apis" },
-    { icon: "🔌", label: "Notificaciones", count: null, href: "/notifications" },
+    { icon: "🏠", label: "Home", count: null, href: "/dashboard" },
+    { icon: "🤝", label: "Clientes", count: null, href: "/dashboard/clients" },
+    { icon: "📦", label: "Winbox", count: null, href: "/dashboard/winboxs" },
+    { icon: "📺", label: "Canales", count: null, href: "/dashboard/channels" },
+    { icon: "🎬", label: "Contenidos", count: null, href: "/dashboard/contents" },
+    { icon: "📰", label: "Noticias", count: null, href: "/dashboard/news" },
+    { icon: "📡", label: "Emisiones especificas", count: 2, href: "/dashboard/emisiones" },
+    { icon: "⚙️", label: "Settings", count: null, href: "/dashboard/settings" },
+    { icon: "📊", label: "Estadisticas", count: null, href: "/dashboard/stats" },
+    { icon: "🔌", label: "APIs", count: null, href: "/dashboard/apis" },
+    { icon: "🔌", label: "Notificaciones", count: 3, href: "/dashboard/notifications" },
   ];
 
   const isActiveRoute = (href: string) => {
-    if (href === "/") {
-      return location.pathname === "/";
+    if (href === "/dashboard") {
+      return location.pathname === "/dashboard";
     }
     return location.pathname.startsWith(href);
   };
