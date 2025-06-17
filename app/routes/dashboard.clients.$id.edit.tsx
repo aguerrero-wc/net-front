@@ -46,7 +46,27 @@ export async function loader({ params }: LoaderFunctionArgs) {
     emailAlerta: "tekteamcolombia@windowschannel.com",
     sectores: ["Salud"],
     slug: "cdc-clinica-del-country",
-    dominio: "cdc.ejemplo.com"
+    dominio: "cdc.ejemplo.com",
+    contactos: [
+      {
+        id: 1,
+        nombre: "Monica Jimeno",
+        cargo: "Gerente de Marketing",
+        telefono: "2145456",
+        email: "mjimeno@clinicadelcountry.com",
+        esContactoPrincipal: true,
+        departamento: "Marketing"
+      },
+      {
+        id: 2,
+        nombre: "Carlos Rodriguez",
+        cargo: "Director Comunicaciones",
+        telefono: "3001234567",
+        email: "crodriguez@clinicadelcountry.com",
+        esContactoPrincipal: false,
+        departamento: "Comunicaciones"
+      }
+    ]
   };
 
   const clienteNuevo: Cliente = {
@@ -74,7 +94,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     emailAlerta: "",
     sectores: [],
     slug: "",
-    dominio: ""
+    dominio: "",
+    contactos: []
   };
 
   // En producción, aquí harías:

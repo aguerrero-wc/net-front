@@ -7,9 +7,3 @@ export { default as NotificationsCard } from './NotificationsCard';
 export { default as SectorsCard } from './SectorsCard';
 export { default as ControlCenterCard } from './ControlCenterCard';
 export { default as UpdateTimesCard } from './UpdateTimesCard';
-
-// Con esto podrías importar en la ruta así:
-// import { ClientForm } from "~/components/Clients";
-
-// O importar componentes individuales:
-// import { ClientDataCard, SiteConfigCard } from "~/components/Clients";

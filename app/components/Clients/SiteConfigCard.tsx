@@ -60,34 +60,10 @@ export default function SiteConfigCard({ cliente, isEditing }: SiteConfigCardPro
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Logo</label>
-            <select
-              name="tipo"
-              defaultValue={cliente.tipo}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="Texto">Texto</option>
-              <option value="Imagen">Imagen</option>
-            </select>
-          </div>
+
         </div>
 
-        {/* Campo condicional para texto del logotipo */}
-        <div className="mt-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Texto del Logotipo
-            </label>
-            <input
-              type="text"
-              name="textoLogotipo"
-              defaultValue={cliente.textoLogotipo}
-              placeholder="Texto que aparecerá como logo"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
-        </div>
+
       </div>
     </div>
   );

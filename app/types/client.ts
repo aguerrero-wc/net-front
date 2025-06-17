@@ -1,4 +1,35 @@
 // types/cliente.ts
+export interface Contacto {
+  id: number;
+  nombre: string;
+  cargo: string;
+  telefono: string;
+  email: string;
+  esContactoPrincipal: boolean;
+  departamento: string;
+}
+
+export interface Usuario {
+  id: number;
+  nombre: string;
+  email: string;
+  usuario: string;
+  rol: 'admin' | 'editor' | 'viewer' | 'moderator';
+  estado: 'activo' | 'inactivo' | 'suspendido';
+  fechaCreacion: string;
+  ultimoAcceso?: string;
+  permisos: {
+    contenidos: boolean;
+    comunicados: boolean;
+    usuarios: boolean;
+    configuracion: boolean;
+    reportes: boolean;
+  };
+  // Campos de seguridad - nunca se almacenan contraseñas en texto plano
+  requiereCambioContrasena: boolean;
+  fechaUltimoCambioContrasena?: string;
+}
+
 export interface Cliente {
   id?: number;
   nombre: string;
@@ -31,6 +62,10 @@ export interface Cliente {
   emailsNotificaciones?: string[];
   emailsAlertas?: string[];
   numerosWhatsapp?: string[];
+  // Campo para contactos múltiples
+  contactos?: Contacto[];
+  // Campo para usuarios múltiples del centro de control
+  usuarios?: Usuario[];
 }
 
 export interface LoaderData {
