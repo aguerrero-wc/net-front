@@ -1,7 +1,7 @@
 // routes/dashboard.clients.$id.tsx (or routes/dashboard.clients.new.tsx)
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData, useParams } from "@remix-run/react";
-import type { Cliente, LoaderData } from "~/types/cliente";
+import type { Cliente, LoaderData } from "~/types/client";
 
 // Importamos todos los componentes desde el index
 import {

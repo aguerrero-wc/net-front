@@ -1,172 +1,136 @@
 // components/Clients/ControlCenterCard.tsx
 import { useState } from "react";
-import type { Cliente, Usuario } from "~/types/cliente";
+import type { Cliente } from "~/types/client";
+import type { User, UserTenantRole, Role, SystemRoleSlug } from "~/types/roles";
+import { SYSTEM_ROLES } from "~/types/roles";
 
 interface ControlCenterCardProps {
   cliente: Cliente;
   isEditing: boolean;
+  availableRoles?: Role[];
+  currentUserRole?: SystemRoleSlug;
 }
 
-export default function ControlCenterCard({ cliente, isEditing }: ControlCenterCardProps) {
-  // Estados para manejar los usuarios
-  const [usuarios, setUsuarios] = useState<Usuario[]>(
-    isEditing ? (cliente.usuarios || [
-      {
-        id: 1,
-        nombre: "Carlos Admin",
-        email: "admin@clinicadelcountry.com",
-        usuario: "cadmin",
-        rol: "admin",
-        estado: "activo",
-        fechaCreacion: "2024-01-15",
-        ultimoAcceso: "2024-06-15",
-        permisos: {
-          contenidos: true,
-          comunicados: true,
-          usuarios: true,
-          configuracion: true,
-          reportes: true
-        },
-        requiereCambioContrasena: false,
-        fechaUltimoCambioContrasena: "2024-03-15"
-      }
-    ]) : []
+export default function ControlCenterCard({ 
+  cliente, 
+  isEditing, 
+  availableRoles = [],
+  currentUserRole = 'viewer' 
+}: ControlCenterCardProps) {
+  // Estados para manejar los usuarios del tenant
+  const [usuariosTenant, setUsuariosTenant] = useState<UserTenantRole[]>(
+    isEditing ? [] : [] // Se cargarán desde el backend
   );
 
-  const [nuevoUsuario, setNuevoUsuario] = useState<Omit<Usuario, 'id' | 'fechaCreacion' | 'ultimoAcceso'>>({
-    nombre: "",
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [usuarioEditando, setUsuarioEditando] = useState<string | null>(null);
+
+  const [nuevoUsuario, setNuevoUsuario] = useState({
+    firstName: "",
+    lastName: "",
     email: "",
-    usuario: "",
-    rol: "viewer",
-    estado: "activo",
-    permisos: {
-      contenidos: false,
-      comunicados: false,
-      usuarios: false,
-      configuracion: false,
-      reportes: false
-    },
-    requiereCambioContrasena: true
+    phone: "",
+    roleId: "",
+    isActive: true,
+    startsAt: "",
+    expiresAt: "",
+    notes: ""
   });
 
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [usuarioEditando, setUsuarioEditando] = useState<number | null>(null);
-  const [mostrarRestablecerContrasena, setMostrarRestablecerContrasena] = useState<number | null>(null);
+  // Roles disponibles para este tenant (filtrados por nivel de acceso)
+  const rolesDisponibles = availableRoles.filter(role => {
+    if (currentUserRole === 'system_admin') return true;
+    if (currentUserRole === 'tenant_admin') return role.level < 100;
+    return false; // Otros roles no pueden gestionar usuarios
+  });
 
-  const roles = [
-    { 
-      value: 'admin', 
-      label: 'Administrador',
-      description: 'Acceso completo al sistema',
-      permisos: { contenidos: true, comunicados: true, usuarios: true, configuracion: true, reportes: true }
-    },
-    { 
-      value: 'editor', 
-      label: 'Editor',
-      description: 'Puede gestionar contenidos y comunicados',
-      permisos: { contenidos: true, comunicados: true, usuarios: false, configuracion: false, reportes: true }
-    },
-    { 
-      value: 'moderator', 
-      label: 'Moderador',
-      description: 'Puede revisar y aprobar contenidos',
-      permisos: { contenidos: true, comunicados: false, usuarios: false, configuracion: false, reportes: false }
-    },
-    { 
-      value: 'viewer', 
-      label: 'Visualizador',
-      description: 'Solo puede ver reportes',
-      permisos: { contenidos: false, comunicados: false, usuarios: false, configuracion: false, reportes: true }
-    }
-  ];
+  // Verificar permisos
+  const puedeGestionarUsuarios = ['system_admin', 'tenant_admin'].includes(currentUserRole);
 
-  const estados = [
-    { value: 'activo', label: 'Activo', color: 'bg-green-100 text-green-800' },
-    { value: 'inactivo', label: 'Inactivo', color: 'bg-gray-100 text-gray-800' },
-    { value: 'suspendido', label: 'Suspendido', color: 'bg-red-100 text-red-800' }
-  ];
+  if (!puedeGestionarUsuarios) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-purple-50 border-b border-purple-200 px-6 py-3">
+          <h2 className="text-lg font-semibold text-purple-800">Centro de Control</h2>
+          <p className="text-sm text-purple-600 mt-1">Información del sistema</p>
+        </div>
+        <div className="p-6">
+          <div className="text-center py-8 text-gray-500">
+            <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <p className="text-sm">No tienes permisos para gestionar usuarios</p>
+            <p className="text-xs text-gray-400 mt-1">Contacta al administrador para más información</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Función para agregar nuevo usuario
-  const agregarUsuario = () => {
-    if (nuevoUsuario.nombre.trim() && nuevoUsuario.email.trim() && nuevoUsuario.usuario.trim()) {
-      // Verificar que el usuario no exista
-      const usuarioExiste = usuarios.some(u => u.usuario === nuevoUsuario.usuario || u.email === nuevoUsuario.email);
-      if (usuarioExiste) {
-        alert("Ya existe un usuario con ese email o nombre de usuario");
-        return;
-      }
-
-      const usuarioConId: Usuario = {
-        ...nuevoUsuario,
-        id: Date.now(),
-        fechaCreacion: new Date().toISOString().split('T')[0],
-        requiereCambioContrasena: true
-      };
-
-      setUsuarios(prev => [...prev, usuarioConId]);
-      setNuevoUsuario({
-        nombre: "",
-        email: "",
-        usuario: "",
-        rol: "viewer",
-        estado: "activo",
-        permisos: {
-          contenidos: false,
-          comunicados: false,
-          usuarios: false,
-          configuracion: false,
-          reportes: false
-        },
-        requiereCambioContrasena: true
-      });
-      setMostrarFormulario(false);
-    }
-  };
-
-  // Función para eliminar usuario
-  const eliminarUsuario = (id: number) => {
-    if (usuarios.length === 1) {
-      alert("No puedes eliminar el último usuario del sistema");
+  const agregarUsuario = async () => {
+    if (!nuevoUsuario.firstName.trim() || !nuevoUsuario.email.trim() || !nuevoUsuario.roleId) {
+      alert("Por favor completa todos los campos requeridos");
       return;
     }
-    setUsuarios(prev => prev.filter(u => u.id !== id));
-  };
 
-  // Función para cambiar estado del usuario
-  const cambiarEstadoUsuario = (id: number, nuevoEstado: Usuario['estado']) => {
-    setUsuarios(prev => prev.map(u => 
-      u.id === id ? { ...u, estado: nuevoEstado } : u
-    ));
-  };
-
-  // Función para manejar cambio de rol
-  const cambiarRolUsuario = (rol: Usuario['rol']) => {
-    const rolSeleccionado = roles.find(r => r.value === rol);
-    if (rolSeleccionado) {
-      setNuevoUsuario(prev => ({
-        ...prev,
-        rol: rol as Usuario['rol'],
-        permisos: { ...rolSeleccionado.permisos }
-      }));
+    // Verificar que el email no exista
+    const emailExiste = usuariosTenant.some(u => u.user?.email === nuevoUsuario.email);
+    if (emailExiste) {
+      alert("Ya existe un usuario con ese email");
+      return;
     }
+
+    // En producción, aquí harías la llamada al backend
+    // const response = await fetch('/api/tenants/${tenantId}/users', { method: 'POST', ... });
+    
+    console.log("Creando usuario:", nuevoUsuario);
+    alert("Usuario creado. Se enviará un email de bienvenida.");
+    
+    resetFormulario();
   };
 
-  // Función para restablecer contraseña
-  const restablecerContrasena = (id: number) => {
-    setUsuarios(prev => prev.map(u => 
-      u.id === id ? { 
-        ...u, 
-        requiereCambioContrasena: true,
-        fechaUltimoCambioContrasena: new Date().toISOString().split('T')[0]
-      } : u
-    ));
-    setMostrarRestablecerContrasena(null);
-    // Aquí enviarías el email de restablecimiento
+  const resetFormulario = () => {
+    setNuevoUsuario({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      roleId: "",
+      isActive: true,
+      startsAt: "",
+      expiresAt: "",
+      notes: ""
+    });
+    setMostrarFormulario(false);
+    setUsuarioEditando(null);
+  };
+
+  const cambiarRolUsuario = (userTenantRoleId: string, nuevoRoleId: string) => {
+    // En producción: await fetch('/api/user-tenant-roles/${userTenantRoleId}', { method: 'PUT', ... });
+    console.log("Cambiando rol:", { userTenantRoleId, nuevoRoleId });
+  };
+
+  const cambiarEstadoUsuario = (userTenantRoleId: string, activo: boolean) => {
+    // En producción: await fetch('/api/user-tenant-roles/${userTenantRoleId}', { method: 'PUT', ... });
+    console.log("Cambiando estado:", { userTenantRoleId, activo });
+  };
+
+  const restablecerContrasena = (userId: string) => {
+    // En producción: await fetch('/api/users/${userId}/reset-password', { method: 'POST' });
+    console.log("Restableciendo contraseña para usuario:", userId);
     alert("Se ha enviado un email para restablecer la contraseña");
   };
 
+  const revocarAcceso = (userTenantRoleId: string) => {
+    if (confirm('¿Estás seguro de revocar el acceso de este usuario?')) {
+      // En producción: await fetch('/api/user-tenant-roles/${userTenantRoleId}', { method: 'DELETE' });
+      console.log("Revocando acceso:", userTenantRoleId);
+    }
+  };
+
   const formatearFecha = (fecha?: string) => {
-    if (!fecha) return "Nunca";
+    if (!fecha) return "No definido";
     return new Date(fecha).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',
@@ -174,12 +138,8 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
     });
   };
 
-  const obtenerRolInfo = (rol: Usuario['rol']) => {
-    return roles.find(r => r.value === rol) || roles[3];
-  };
-
-  const obtenerEstadoInfo = (estado: Usuario['estado']) => {
-    return estados.find(e => e.value === estado) || estados[1];
+  const obtenerRol = (roleId: string) => {
+    return rolesDisponibles.find(r => r.id === roleId);
   };
 
   return (
@@ -188,7 +148,7 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-purple-800">Centro de Control</h2>
-            <p className="text-sm text-purple-600 mt-1">Gestión de usuarios y accesos al sistema</p>
+            <p className="text-sm text-purple-600 mt-1">Gestión de usuarios y accesos del cliente</p>
           </div>
           <button
             type="button"
@@ -198,27 +158,40 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Agregar Usuario
+            Invitar Usuario
           </button>
         </div>
       </div>
 
       <div className="p-6">
-        {/* Formulario para nuevo usuario */}
+        {/* Formulario para invitar nuevo usuario */}
         {mostrarFormulario && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-medium text-gray-900 mb-4">Nuevo Usuario del Sistema</h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-4">Invitar Nuevo Usuario</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre Completo <span className="text-red-500">*</span>
+                  Nombre <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={nuevoUsuario.nombre}
-                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, nombre: e.target.value }))}
-                  placeholder="Nombre completo del usuario"
+                  value={nuevoUsuario.firstName}
+                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, firstName: e.target.value }))}
+                  placeholder="Nombre"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Apellido <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={nuevoUsuario.lastName}
+                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, lastName: e.target.value }))}
+                  placeholder="Apellido"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -237,82 +210,95 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Usuario <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                 <input
-                  type="text"
-                  value={nuevoUsuario.usuario}
-                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, usuario: e.target.value.toLowerCase() }))}
-                  placeholder="nombreusuario"
+                  type="tel"
+                  value={nuevoUsuario.phone}
+                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="+57 300 123 4567"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Solo letras minúsculas y números</p>
               </div>
-
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Rol <span className="text-red-500">*</span>
+                </label>
                 <select
-                  value={nuevoUsuario.rol}
-                  onChange={(e) => cambiarRolUsuario(e.target.value as Usuario['rol'])}
+                  value={nuevoUsuario.roleId}
+                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, roleId: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  {roles.map(rol => (
-                    <option key={rol.value} value={rol.value}>{rol.label}</option>
+                  <option value="">Seleccionar rol</option>
+                  {rolesDisponibles.map(rol => (
+                    <option key={rol.id} value={rol.id}>
+                      {rol.icon} {rol.name} (Nivel {rol.level})
+                    </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  {obtenerRolInfo(nuevoUsuario.rol).description}
-                </p>
+                {nuevoUsuario.roleId && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {obtenerRol(nuevoUsuario.roleId)?.description}
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                 <select
-                  value={nuevoUsuario.estado}
-                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, estado: e.target.value as Usuario['estado'] }))}
+                  value={nuevoUsuario.isActive.toString()}
+                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, isActive: e.target.value === 'true' }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  {estados.map(estado => (
-                    <option key={estado.value} value={estado.value}>{estado.label}</option>
-                  ))}
+                  <option value="true">Activo</option>
+                  <option value="false">Inactivo</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio (opcional)</label>
+                <input
+                  type="date"
+                  value={nuevoUsuario.startsAt}
+                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, startsAt: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de expiración (opcional)</label>
+                <input
+                  type="date"
+                  value={nuevoUsuario.expiresAt}
+                  onChange={(e) => setNuevoUsuario(prev => ({ ...prev, expiresAt: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
               </div>
             </div>
 
-            {/* Permisos específicos */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Permisos Específicos</label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {Object.entries(nuevoUsuario.permisos).map(([permiso, valor]) => (
-                  <label key={permiso} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={valor}
-                      onChange={(e) => setNuevoUsuario(prev => ({
-                        ...prev,
-                        permisos: { ...prev.permisos, [permiso]: e.target.checked }
-                      }))}
-                      className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                    />
-                    <span className="capitalize">{permiso}</span>
-                  </label>
-                ))}
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notas (opcional)</label>
+              <textarea
+                value={nuevoUsuario.notes}
+                onChange={(e) => setNuevoUsuario(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Notas sobre la asignación del rol..."
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              />
             </div>
             
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={agregarUsuario}
-                disabled={!nuevoUsuario.nombre.trim() || !nuevoUsuario.email.trim() || !nuevoUsuario.usuario.trim()}
+                disabled={!nuevoUsuario.firstName.trim() || !nuevoUsuario.email.trim() || !nuevoUsuario.roleId}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                Crear Usuario
+                Enviar Invitación
               </button>
               <button
                 type="button"
-                onClick={() => setMostrarFormulario(false)}
+                onClick={resetFormulario}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
               >
                 Cancelar
@@ -323,42 +309,61 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-start gap-2">
                 <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <div>
-                  <p className="text-sm font-medium text-blue-900">Seguridad</p>
-                  <p className="text-sm text-blue-700">Se enviará un email al usuario con instrucciones para establecer su contraseña.</p>
+                  <p className="text-sm font-medium text-blue-900">Invitación por Email</p>
+                  <p className="text-sm text-blue-700">Se enviará una invitación al email especificado con instrucciones para crear su cuenta.</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Lista de usuarios existentes */}
-        {usuarios.length > 0 ? (
+        {/* Lista de usuarios del tenant */}
+        {usuariosTenant.length > 0 ? (
           <div className="space-y-4">
-            {usuarios.map((usuario) => {
-              const rolInfo = obtenerRolInfo(usuario.rol);
-              const estadoInfo = obtenerEstadoInfo(usuario.estado);
+            {usuariosTenant.map((userTenantRole) => {
+              const user = userTenantRole.user;
+              const rol = userTenantRole.role;
               
               return (
-                <div key={usuario.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                <div key={userTenantRole.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-medium text-gray-900">{usuario.nombre}</h4>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${estadoInfo.color}`}>
-                          {estadoInfo.label}
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          {user?.avatar ? (
+                            <img src={user.avatar} alt="" className="w-8 h-8 rounded-full" />
+                          ) : (
+                            <span className="text-sm font-medium text-gray-600">
+                              {user?.firstName?.[0]}{user?.lastName?.[0]}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-medium text-gray-900">{user?.fullName}</h4>
+                        
+                        <span 
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                          style={{ 
+                            backgroundColor: `${rol?.color}20`, 
+                            color: rol?.color 
+                          }}
+                        >
+                          {rol?.icon} {rol?.name}
                         </span>
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          {rolInfo.label}
+                        
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          userTenantRole.isCurrentlyActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {userTenantRole.isCurrentlyActive ? 'Activo' : 'Inactivo'}
                         </span>
-                        {usuario.requiereCambioContrasena && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                            Requiere cambio de contraseña
+
+                        {userTenantRole.isExpired && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Expirado
                           </span>
                         )}
                       </div>
@@ -368,67 +373,83 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
-                          <span>{usuario.email}</span>
+                          <span>{user?.email}</span>
                         </div>
                         
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <span>@{usuario.usuario}</span>
-                        </div>
+                        {user?.phone && (
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span>{user.phone}</span>
+                          </div>
+                        )}
                         
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 6v6m-7-7h14l-1 9H6l-1-9z" />
                           </svg>
-                          <span>Creado: {formatearFecha(usuario.fechaCreacion)}</span>
+                          <span>Asignado: {formatearFecha(userTenantRole.createdAt)}</span>
                         </div>
-                        
-                        {usuario.ultimoAcceso && (
+
+                        {userTenantRole.expiresAt && (
                           <div className="flex items-center gap-2">
                             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span>Último acceso: {formatearFecha(usuario.ultimoAcceso)}</span>
+                            <span>Expira: {formatearFecha(userTenantRole.expiresAt)}</span>
                           </div>
                         )}
 
-                        {/* Permisos */}
-                        <div className="md:col-span-2 lg:col-span-3">
-                          <div className="flex items-center gap-2 mb-1">
+                        {user?.lastLoginAt && (
+                          <div className="flex items-center gap-2">
                             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                             </svg>
-                            <span className="font-medium">Permisos:</span>
+                            <span>Último acceso: {formatearFecha(user.lastLoginAt)}</span>
                           </div>
-                          <div className="flex flex-wrap gap-1 ml-6">
-                            {Object.entries(usuario.permisos).map(([permiso, valor]) => valor && (
-                              <span key={permiso} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-green-100 text-green-800">
-                                {permiso}
-                              </span>
-                            ))}
+                        )}
+
+                        {userTenantRole.notes && (
+                          <div className="md:col-span-2 lg:col-span-3">
+                            <div className="flex items-start gap-2">
+                              <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <span className="text-gray-600 text-sm">{userTenantRole.notes}</span>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-2 ml-4">
-                      {/* Cambiar estado */}
+                      {/* Cambiar rol */}
                       <select
-                        value={usuario.estado}
-                        onChange={(e) => cambiarEstadoUsuario(usuario.id, e.target.value as Usuario['estado'])}
+                        value={userTenantRole.roleId}
+                        onChange={(e) => cambiarRolUsuario(userTenantRole.id, e.target.value)}
                         className="text-xs border border-gray-300 rounded px-2 py-1"
                       >
-                        {estados.map(estado => (
-                          <option key={estado.value} value={estado.value}>{estado.label}</option>
+                        {rolesDisponibles.map(rol => (
+                          <option key={rol.id} value={rol.id}>{rol.name}</option>
                         ))}
                       </select>
 
+                      {/* Cambiar estado */}
+                      <button
+                        onClick={() => cambiarEstadoUsuario(userTenantRole.id, !userTenantRole.isActive)}
+                        className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                          userTenantRole.isActive 
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                        }`}
+                      >
+                        {userTenantRole.isActive ? 'Desactivar' : 'Activar'}
+                      </button>
+
                       {/* Restablecer contraseña */}
                       <button
-                        type="button"
-                        onClick={() => setMostrarRestablecerContrasena(usuario.id)}
+                        onClick={() => restablecerContrasena(user?.id || '')}
                         className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
                         title="Restablecer contraseña"
                       >
@@ -437,13 +458,11 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
                         </svg>
                       </button>
                       
-                      {/* Eliminar usuario */}
+                      {/* Revocar acceso */}
                       <button
-                        type="button"
-                        onClick={() => eliminarUsuario(usuario.id)}
-                        disabled={usuarios.length === 1}
-                        className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                        title="Eliminar usuario"
+                        onClick={() => revocarAcceso(userTenantRole.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                        title="Revocar acceso"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -451,32 +470,6 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
                       </button>
                     </div>
                   </div>
-
-                  {/* Modal de confirmación para restablecer contraseña */}
-                  {mostrarRestablecerContrasena === usuario.id && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                      <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Restablecer Contraseña</h3>
-                        <p className="text-sm text-gray-600 mb-6">
-                          Se enviará un email a <strong>{usuario.email}</strong> con instrucciones para restablecer la contraseña.
-                        </p>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => restablecerContrasena(usuario.id)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                          >
-                            Enviar Email
-                          </button>
-                          <button
-                            onClick={() => setMostrarRestablecerContrasena(null)}
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -486,26 +479,42 @@ export default function ControlCenterCard({ cliente, isEditing }: ControlCenterC
             <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
-            <p className="text-sm">No hay usuarios configurados</p>
-            <p className="text-xs text-gray-400 mt-1">Haz clic en "Agregar Usuario" para empezar</p>
+            <p className="text-sm">No hay usuarios asignados a este cliente</p>
+            <p className="text-xs text-gray-400 mt-1">Haz clic en "Invitar Usuario" para empezar</p>
           </div>
         )}
 
-        {/* Hidden inputs para el formulario */}
-        {usuarios.map((usuario, index) => (
-          <div key={usuario.id}>
-            <input type="hidden" name={`usuarios[${index}][id]`} value={usuario.id} />
-            <input type="hidden" name={`usuarios[${index}][nombre]`} value={usuario.nombre} />
-            <input type="hidden" name={`usuarios[${index}][email]`} value={usuario.email} />
-            <input type="hidden" name={`usuarios[${index}][usuario]`} value={usuario.usuario} />
-            <input type="hidden" name={`usuarios[${index}][rol]`} value={usuario.rol} />
-            <input type="hidden" name={`usuarios[${index}][estado]`} value={usuario.estado} />
-            <input type="hidden" name={`usuarios[${index}][permisos]`} value={JSON.stringify(usuario.permisos)} />
-            <input type="hidden" name={`usuarios[${index}][requiereCambioContrasena]`} value={usuario.requiereCambioContrasena.toString()} />
+        {/* Configuraciones generales del sistema */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h3 className="text-base font-medium text-gray-900 mb-4">Configuraciones del Sistema</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Correo Gestión Cliente
+              </label>
+              <input
+                type="email"
+                name="correoGestionCliente"
+                defaultValue={cliente.correoGestionCliente}
+                placeholder="gestion@ejemplo.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Correo Tek Team
+              </label>
+              <textarea
+                name="correoTekTeam"
+                defaultValue={cliente.correoTekTeam}
+                placeholder="team1@ejemplo.com, team2@ejemplo.com"
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              />
+            </div>
           </div>
-        ))}
-
-
+        </div>
       </div>
     </div>
   );

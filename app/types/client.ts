@@ -1,4 +1,4 @@
-// types/cliente.ts
+// types/client.ts
 export interface Contacto {
   id: number;
   nombre: string;
@@ -9,6 +9,7 @@ export interface Contacto {
   departamento: string;
 }
 
+// Legacy - mantenemos para compatibilidad con el sistema actual
 export interface Usuario {
   id: number;
   nombre: string;
@@ -25,7 +26,6 @@ export interface Usuario {
     configuracion: boolean;
     reportes: boolean;
   };
-  // Campos de seguridad - nunca se almacenan contraseñas en texto plano
   requiereCambioContrasena: boolean;
   fechaUltimoCambioContrasena?: string;
 }
@@ -64,7 +64,7 @@ export interface Cliente {
   numerosWhatsapp?: string[];
   // Campo para contactos múltiples
   contactos?: Contacto[];
-  // Campo para usuarios múltiples del centro de control
+  // Campo para usuarios múltiples del centro de control (legacy)
   usuarios?: Usuario[];
 }
 

@@ -59,11 +59,7 @@ export default function SiteConfigCard({ cliente, isEditing }: SiteConfigCardPro
               </button>
             </div>
           </div>
-
-
         </div>
-
-
       </div>
     </div>
   );

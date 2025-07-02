@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - API_BASE_URL=${API_BASE_URL_DEV:-http://app-nestjs-dev:3000}
+      - API_URL=${API_URL:-http://app-nestjs-dev:3000}
     volumes:
       - ./:/usr/src/app
       - /usr/src/app/node_modules
