@@ -5,35 +5,24 @@ import type { AxiosRequestConfig } from 'axios';
 
 import type { Role, SystemRoleSlug, AdminLoaderData } from "~/types/roles";
 import { SYSTEM_ROLES, PERMISSIONS } from "~/types/roles";
-import RolesManagementCard from "~/components/Admin/RolesManagementCard";
+import RolesManagementCard from "~/components/Roles/RolesManagementCard";
 
-// Función para hacer llamadas a la API
 async function apiCall(endpoint: string, options: AxiosRequestConfig = {}) {
   const baseUrl = process.env.API_URL || 'http://localhost:3001/v1';
 
   try {
     const response = await axios({
       url: `${baseUrl}${endpoint}`,
-      // Axios fusiona automáticamente las opciones que le pasas
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        // Aquí puedes agregar headers de autenticación
-        // 'Authorization': `Bearer ${token}`,
-        ...options.headers, // Esto permite sobreescribir o añadir headers específicos por llamada
+        ...options.headers, 
       },
     });
 
-    // Axios ya parsea la respuesta JSON por defecto.
-    // Accedemos a los datos directamente con `response.data`.
-    // Suponiendo que tu API siempre devuelve un objeto { data: [...] }
-    const roles = response.data.data;
-    
-    console.log('Datos recibidos de la API (con Axios):', roles);
-    console.log('Type recibido de la API (con Axios):', typeof(roles));
-
-
-    return roles;
+    const data = response.data.data;
+    console.log('rolessssssssss', data);
+    return data;
 
   } catch (error) {
     // Axios proporciona un manejo de errores mucho más detallado
@@ -49,6 +38,8 @@ async function apiCall(endpoint: string, options: AxiosRequestConfig = {}) {
     }
   }
 }
+
+
 
 // Loader que verifica permisos y carga datos de administración
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -159,13 +150,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // ];
 
   // Llamadas reales a la API
-  const roles = await apiCall('/roles',{
-    method: 'GET'
-  })
+  // const roles = await apiCall('/roles',{
+  //   method: 'GET'
+  // })
 
-  return json ({
-    roles:roles
-  })
+  const [ roles, permissions ] = await Promise.all([
+    apiCall('/roles',{
+      method: 'GET',
+      params: { includePermissions: true}
+    }),
+    apiCall('/permissions',{
+      method: 'GET',
+    }),
+  ])
+
+  console.log('dataaaa', roles, permissions);
+  return json({
+      roles: roles, // Ya están enriquecidos
+      permissions,
+      success: true
+    });
 }
 
 export async function action({ request }: LoaderFunctionArgs) {
