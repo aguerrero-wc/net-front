@@ -1,6 +1,7 @@
 // components/Roles/RoleCard.tsx
 import { useState } from "react";
 import type { Role, PermissionObject } from "~/types/roles";
+import { getPermissionsByCategory } from "~/types/roles";
 
 interface RoleCardProps {
   roleId: string; // ✅ ID del rol
@@ -26,6 +27,9 @@ export default function RoleCard({
     if (level >= 30) return 'bg-green-100 text-green-800';
     return 'bg-gray-100 text-gray-800';
   };
+
+  // Agrupar permisos por categoría
+  const gruposPermisos = getPermissionsByCategory(role.permissions);
 
   const handleEdit = () => {
     if (role.isSystemRole) {
@@ -112,27 +116,59 @@ export default function RoleCard({
           <div className="mt-3">
             <button
               onClick={() => setMostrarPermisos(!mostrarPermisos)}
-              className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+              className="text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1"
             >
-              {mostrarPermisos ? '▼ Ocultar permisos' : '▶ Ver permisos'}
+              {mostrarPermisos ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  Ocultar permisos por categorías
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  Ver permisos por categorías ({Object.keys(gruposPermisos).length} categorías)
+                </>
+              )}
             </button>
             
             {mostrarPermisos && (
               <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-                  {role.permissions.map(permiso => (
-                    <span 
-                      key={permiso.id} 
-                      className="inline-flex items-center px-2 py-1 rounded text-xs bg-green-100 text-green-800"
-                      title={`${permiso.group}: ${permiso.key}`}
-                    >
-                      {permiso.description}
-                    </span>
-                  ))}
-                </div>
-                
-                {role.permissions.length === 0 && (
-                  <p className="text-sm text-gray-500 italic">No hay permisos asignados</p>
+                {Object.keys(gruposPermisos).length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries(gruposPermisos).map(([categoria, permisos]) => (
+                      <div key={categoria} className="border-l-2 border-purple-200 pl-3">
+                        <h5 className="font-medium text-gray-900 text-sm mb-2 capitalize flex items-center gap-2">
+                          <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                          {categoria}
+                          <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded-full border">
+                            {permisos.length}
+                          </span>
+                        </h5>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+                          {permisos.map(permiso => (
+                            <span 
+                              key={permiso.id} 
+                              className="inline-flex items-center px-2 py-1 rounded text-xs bg-green-100 text-green-800 border border-green-200"
+                              title={`${permiso.group}: ${permiso.key}`}
+                            >
+                              {permiso.description}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    No hay permisos asignados
+                  </p>
                 )}
               </div>
             )}

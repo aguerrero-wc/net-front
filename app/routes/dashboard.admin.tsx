@@ -80,7 +80,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-// Action para manejar operaciones administrativas (mantener tu implementación actual)
 export async function action({ request }: LoaderFunctionArgs) {
   const formData = await request.formData();
   const actionType = formData.get('_action') as string;
@@ -94,21 +93,26 @@ export async function action({ request }: LoaderFunctionArgs) {
           description: formData.get('description') as string,
           color: formData.get('color') as string,
           icon: formData.get('icon') as string,
-          permissions: JSON.parse(formData.get('permissions') as string || '[]'), // ← IDs de permisos
+          permissionKeys: JSON.parse(formData.get('permissions') as string || '[]'), // ← IDs de permisos
           level: parseInt(formData.get('level') as string),
           isActive: formData.get('isActive') === 'true',
           isSystemRole: formData.get('isSystemRole') === 'true'
         };
 
+        console.log('Creando rol, petición:', roleData);
+        
         const newRole = await apiCall('/roles', {
           method: 'POST',
-          data: roleData // ← Cambié de body a data para axios
+          data: roleData
         });
 
+        console.log('Rol creado en backend:', newRole);
+
+        // ✅ IMPORTANTE: No redireccionar, solo retornar JSON
         return json({ 
           success: true, 
           message: 'Rol creado exitosamente',
-          data: newRole 
+          data: newRole // ✅ Debe incluir el rol completo con permisos
         });
       }
       
@@ -120,7 +124,7 @@ export async function action({ request }: LoaderFunctionArgs) {
           description: formData.get('description') as string,
           color: formData.get('color') as string,
           icon: formData.get('icon') as string,
-          permissions: JSON.parse(formData.get('permissions') as string || '[]'),
+          permissionKeys: JSON.parse(formData.get('permissions') as string || '[]'), // ✅ Cambié esto
           level: parseInt(formData.get('level') as string),
           isActive: formData.get('isActive') === 'true'
         };
@@ -146,7 +150,8 @@ export async function action({ request }: LoaderFunctionArgs) {
 
         return json({ 
           success: true, 
-          message: 'Rol eliminado exitosamente' 
+          message: 'Rol eliminado exitosamente',
+          data: { id: roleId } // ✅ Incluir ID para identificar qué eliminar
         });
       }
 

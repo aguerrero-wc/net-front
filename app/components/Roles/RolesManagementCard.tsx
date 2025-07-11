@@ -1,13 +1,14 @@
-// components/Roles/RolesManagementCard.tsx - VERSIÓN REFACTORIZADA
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useActionData, useRevalidator } from "@remix-run/react";
 import type { Role, PermissionObject, SystemRoleSlug } from "~/types/roles";
 import RolesList from "./RolesList";
 import RoleForm from "./RoleForm";
+import Notification from "./Notification";
 
 interface RolesManagementCardProps {
   currentUserRole: SystemRoleSlug;
   roles?: Role[];
-  permissions?: PermissionObject[]; // ← Ahora tipado correctamente
+  permissions?: PermissionObject[];
 }
 
 export default function RolesManagementCard({ 
@@ -19,34 +20,74 @@ export default function RolesManagementCard({
   if (currentUserRole !== 'system_admin') {
     return null;
   }
-
-  // Estados principales
-  const [rolesState, setRolesState] = useState<Role[]>(roles.length > 0 ? roles : [
-    {
-      id: '1',
-      name: 'Administrador del Sistema',
-      slug: 'system_admin',
-      description: 'Acceso completo a todo el sistema multi-tenant',
-      color: '#dc2626',
-      icon: '⚡',
-      permissions: [], // ← Vacío por ahora, se llenará con datos reales de la API
-      level: 100,
-      isActive: true,
-      isSystemRole: true,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
-    }
-    // Datos de ejemplo simplificados - los reales vendrán de la API
-  ]);
   
+  console.log('📊 RolesManagementCard recibió:', {
+    rolesCount: roles.length,
+    permissionsCount: permissions.length,
+    roles: roles.map(r => ({ id: r.id, name: r.name }))
+  });
+
+  // ✅ NUEVO: Escuchar respuesta del action y revalidator
+  const actionData = useActionData<any>();
+  const revalidator = useRevalidator();
+
+  // Estados del formulario únicamente
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [rolEditando, setRolEditando] = useState<string | null>(null);
+  
+  // Estados para notificaciones
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info';
+  }>({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  // ✅ NUEVO: Revalidar datos cuando el action sea exitoso
+  useEffect(() => {
+    console.log('📢 ActionData cambió:', actionData);
+    
+    if (actionData?.success) {
+      console.log('✅ Action exitoso:', actionData);
+      
+      // Recargar datos del loader
+      console.log('🔄 Revalidando datos...');
+      revalidator.revalidate();
+      
+      // Cerrar formulario
+      console.log('📝 Cerrando formulario...');
+      resetFormulario();
+      
+      // Mostrar notificación de éxito
+      if (actionData.message) {
+        console.log('🔔 Mostrando notificación de éxito');
+        setNotification({
+          show: true,
+          message: actionData.message,
+          type: 'success'
+        });
+      }
+    }
+    
+    // Mostrar error si existe
+    if (actionData?.success === false && actionData?.message) {
+      console.log('❌ Action falló:', actionData.message);
+      setNotification({
+        show: true,
+        message: actionData.message,
+        type: 'error'
+      });
+    }
+  }, [actionData, revalidator]);
 
   // ===== FUNCIONES DE MANEJO DE ROLES =====
 
   const handleEditRole = (roleId: string) => {
     console.log('Editando rol con ID:', roleId);
-    const rol = rolesState.find(r => r.id === roleId);
+    const rol = roles.find(r => r.id === roleId);
     
     if (rol?.isSystemRole) {
       alert('No puedes editar roles del sistema');
@@ -59,54 +100,28 @@ export default function RolesManagementCard({
 
   const handleDeleteRole = (roleId: string) => {
     console.log('Eliminando rol con ID:', roleId);
-    const rol = rolesState.find(r => r.id === roleId);
+    const rol = roles.find(r => r.id === roleId);
     
     if (rol?.isSystemRole) {
       alert('No puedes eliminar roles del sistema');
       return;
     }
     
-    setRolesState(prev => prev.filter(r => r.id !== roleId));
+    // TODO: Implementar delete con Remix Form
+    console.log('Delete pendiente de implementar');
   };
 
   const handleToggleRoleStatus = (roleId: string, isActive: boolean) => {
     console.log('Cambiando estado del rol:', roleId, 'a:', isActive);
-    const rol = rolesState.find(r => r.id === roleId);
+    const rol = roles.find(r => r.id === roleId);
     
     if (rol?.isSystemRole && !isActive) {
       alert('No puedes desactivar roles del sistema');
       return;
     }
     
-    setRolesState(prev => prev.map(r => 
-      r.id === roleId 
-        ? { ...r, isActive, updatedAt: new Date().toISOString() } 
-        : r
-    ));
-  };
-
-  const handleSaveRole = (roleData: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (rolEditando) {
-      // Editar rol existente
-      console.log('Actualizando rol:', rolEditando, roleData);
-      setRolesState(prev => prev.map(rol => 
-        rol.id === rolEditando 
-          ? { ...rol, ...roleData, updatedAt: new Date().toISOString() }
-          : rol
-      ));
-    } else {
-      // Crear nuevo rol
-      const nuevoRol: Role = {
-        ...roleData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      console.log('Creando nuevo rol:', nuevoRol);
-      setRolesState(prev => [...prev, nuevoRol]);
-    }
-
-    resetFormulario();
+    // TODO: Implementar toggle con Remix Form
+    console.log('Toggle pendiente de implementar');
   };
 
   const resetFormulario = () => {
@@ -114,8 +129,12 @@ export default function RolesManagementCard({
     setRolEditando(null);
   };
 
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, show: false }));
+  };
+
   const getRoleBeingEdited = (): Role | null => {
-    return rolEditando ? rolesState.find(r => r.id === rolEditando) || null : null;
+    return rolEditando ? roles.find(r => r.id === rolEditando) || null : null;
   };
 
   // ===== RENDER =====
@@ -130,7 +149,7 @@ export default function RolesManagementCard({
               🛡️ Gestión de Roles
             </h2>
             <p className="text-sm text-purple-600 mt-1">
-              Configuración de roles y permisos del sistema • Total: {rolesState.length} roles
+              Configuración de roles y permisos del sistema • Total: {roles.length} roles
             </p>
           </div>
           <button
@@ -150,25 +169,30 @@ export default function RolesManagementCard({
       </div>
 
       <div className="p-6">
+        {/* Notificación dinámica */}
+        <Notification
+          show={notification.show}
+          message={notification.message}
+          type={notification.type}
+          onClose={closeNotification}
+        />
+
         {/* Formulario para crear/editar rol */}
         {mostrarFormulario && (
           <RoleForm
             role={getRoleBeingEdited()}
-            availablePermissions={permissions} // ← Pasando permisos disponibles
-            onSave={handleSaveRole}
+            availablePermissions={permissions}
             onCancel={resetFormulario}
             isEditing={!!rolEditando}
           />
         )}
 
         <RolesList
-          roles={rolesState}
+          roles={roles}
           onEdit={handleEditRole}
           onDelete={handleDeleteRole}
           onToggleStatus={handleToggleRoleStatus}
         />
-
-        
       </div>
     </div>
   );
