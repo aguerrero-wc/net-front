@@ -9,6 +9,14 @@ declare module "@remix-run/node" {
 }
 
 export default defineConfig({
+  server: {
+    port: 5173,
+    // Permitir hosts específicos
+    allowedHosts: [
+      'localhost',
+      'windowschannel.us',
+    ],
+  },
   plugins: [
     remix({
       future: {
