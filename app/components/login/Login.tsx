@@ -1,40 +1,94 @@
 import { useState } from 'react';
-import { Form, json } from '@remix-run/react';
+import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { Form, useActionData, useSearchParams, useNavigation } from "@remix-run/react";
+import { signIn } from "~/services/auth.server";
+import { createUserSession } from "~/utils/session.server";
+import { requireGuest } from "~/utils/guards.server";
 
-// Esto sería tu routes/login.tsx
-export async function action({ request }) {
+/**
+ * Loader: Verificar que el usuario no esté autenticado
+ */
+export async function loader({ request }: LoaderFunctionArgs) {
+  await requireGuest(request);
+  return json({});
+}
+
+/**
+ * Action: Procesar el formulario de login
+ */
+export async function action({ request }: ActionFunctionArgs) {
+  await requireGuest(request);
+
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
-  const rememberMe = formData.get("remember-me");
-  
-  // Tu lógica de autenticación aquí
-  console.log('Login attempt:', { email, password, rememberMe });
-  
-  // Ejemplo de validación
-  if (!email || !password) {
-    return json({ error: "Email y contraseña son requeridos" }, { status: 400 });
+  const redirectTo = formData.get("redirectTo") || "/dashboard";
+
+  // Validación básica
+  if (typeof email !== "string" || !email) {
+    return json(
+      { error: "El email es requerido" },
+      { status: 400 }
+    );
   }
-  
-  // Si login exitoso, redirigir
-  // return redirect("/videos");
-  
-  return json({ success: true });
+
+  if (typeof password !== "string" || !password) {
+    return json(
+      { error: "La contraseña es requerida" },
+      { status: 400 }
+    );
+  }
+
+  // Validar formato de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return json(
+      { error: "Email inválido" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // Intentar iniciar sesión
+    const { accessToken, user } = await signIn({ email, password });
+
+    // Crear sesión en Remix
+    return createUserSession({
+      request,
+      accessToken,
+      user,
+      redirectTo: typeof redirectTo === "string" ? redirectTo : "/dashboard",
+    });
+  } catch (error) {
+    console.error("Error en login:", error);
+    return json(
+      { error: error instanceof Error ? error.message : "Error al iniciar sesión" },
+      { status: 401 }
+    );
+  }
 }
 
+/**
+ * Componente de Login
+ */
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const actionData = useActionData<typeof action>();
+  const [searchParams] = useSearchParams();
+  const navigation = useNavigation();
+  
+  const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+  const isSubmitting = navigation.state === "submitting";
 
   const handleGoogleLogin = () => {
     // Redirigir a OAuth endpoint
-    // window.location.href = '/auth/google';
-    window.location.href = '/dashboard';
+    window.location.href = '/auth/google';
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Panel Izquierdo con Imagen e Info */}
-      <div className="hidden lg:flex lg:w-2/2 bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 relative overflow-hidden">
         {/* Patrón de fondo sutil */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
@@ -78,7 +132,7 @@ export default function LoginPage() {
       </div>
       
       {/* Panel Derecho con Formulario */}
-      <div className="w-full lg:w-1/2 flex items-center justify-end p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           {/* Header */}
           <div className="text-center space-y-2">
@@ -98,6 +152,26 @@ export default function LoginPage() {
           
           {/* Formulario REMIX */}
           <Form method="post" className="space-y-6">
+            <input type="hidden" name="redirectTo" value={redirectTo} />
+
+            {/* Error Message */}
+            {actionData?.error && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-red-800">
+                      {actionData.error}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -107,9 +181,10 @@ export default function LoginPage() {
                 id="email" 
                 name="email" 
                 type="email" 
-                defaultValue="admin@windowschannel.com"
+                autoComplete="email"
                 className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                 placeholder="tu@email.com"
+                disabled={isSubmitting}
                 required
               />
             </div>
@@ -124,14 +199,17 @@ export default function LoginPage() {
                   id="password" 
                   name="password" 
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   className="block w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                   placeholder="Tu contraseña"
+                  disabled={isSubmitting}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  disabled={isSubmitting}
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,6 +234,7 @@ export default function LoginPage() {
                   type="checkbox" 
                   defaultChecked
                   className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  disabled={isSubmitting}
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                   Recordar sesión
@@ -163,7 +242,7 @@ export default function LoginPage() {
               </div>
               <div className="text-sm">
                 <a 
-                  href="/forgot-password"
+                  href="/auth/forgot-password"
                   className="font-medium text-purple-600 hover:text-purple-500 transition-colors"
                 >
                   ¿Olvidaste tu contraseña?
@@ -174,9 +253,10 @@ export default function LoginPage() {
             {/* Botón de Login */}
             <button 
               type="submit" 
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+              disabled={isSubmitting}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Iniciar Sesión
+              {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
             </button>
           </Form>
           
@@ -194,7 +274,8 @@ export default function LoginPage() {
           <button 
             type="button" 
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -210,7 +291,7 @@ export default function LoginPage() {
             <span className="text-sm text-gray-600">
               ¿No tienes una cuenta? 
               <a 
-                href="/register"
+                href="/auth/signup"
                 className="font-medium text-purple-600 hover:text-purple-500 transition-colors ml-1"
               >
                 Regístrate

@@ -1,9 +1,18 @@
-import LoginPage from "~/components/login/Login";
+import { optionalAuth } from "~/utils/guards.server";
+import { redirect } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 
-export default function HomePage() {
-  return (
-    <div className="flex h-screen bg-gray-50">
-      <LoginPage />
-    </div>
-  );
+// _index.tsx - Landing page que redirige
+export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await optionalAuth(request);
+  
+  if (user) {
+    return redirect("/dashboard");
+  }
+  
+  return redirect("/auth/login");
+}
+
+export default function Index() {
+  return null;
 }
