@@ -20,14 +20,14 @@ export async function action({ request }: ActionFunctionArgs) {
   await requireGuest(request);
 
   const formData = await request.formData();
-  const email = formData.get("email");
+  const identifier = formData.get("identifier");
   const password = formData.get("password");
   const redirectTo = formData.get("redirectTo") || "/dashboard";
 
   // Validación básica
-  if (typeof email !== "string" || !email) {
+  if (typeof identifier !== "string" || !identifier) {
     return json(
-      { error: "El email es requerido" },
+      { error: "El email o username es requerido" },
       { status: 400 }
     );
   }
@@ -39,18 +39,9 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  // Validar formato de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return json(
-      { error: "Email inválido" },
-      { status: 400 }
-    );
-  }
-
   try {
     // Intentar iniciar sesión
-    const { accessToken, user } = await signIn({ email, password });
+    const { accessToken, user } = await signIn({ identifier, password });
 
     // Crear sesión en Remix
     return createUserSession({
@@ -145,10 +136,10 @@ export default function Login() {
               </div>
             )}
 
-            {/* Email Input */}
+            {/* Email o Username Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 ml-1">
-                Email
+              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 ml-1">
+                Email o Username
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -157,12 +148,12 @@ export default function Login() {
                   </svg>
                 </div>
                 <input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  autoComplete="email"
+                  id="identifier" 
+                  name="identifier" 
+                  type="text" 
+                  autoComplete="username"
                   className="block w-full pl-12 pr-4 py-3.5 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all text-gray-800"
-                  placeholder="tu@email.com"
+                  placeholder="Email o Username"
                   disabled={isSubmitting}
                   required
                 />

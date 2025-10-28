@@ -21,12 +21,12 @@ export interface AuthTokens {
 }
 
 export interface SignInDto {
-  email: string;
+  identifier: string;
   password: string;
 }
 
 export interface SignUpDto {
-  email: string;
+  identifier: string;
   password: string;
   name?: string;
 }

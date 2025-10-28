@@ -7,7 +7,6 @@ import { useLoaderData } from "@remix-run/react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireAuth(request);
-    console.log("👤 Usuario en loader:", user); // <-- Ver en terminal del servidor
   return json({ user });
 }
 

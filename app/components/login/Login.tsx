@@ -20,14 +20,14 @@ export async function action({ request }: ActionFunctionArgs) {
   await requireGuest(request);
 
   const formData = await request.formData();
-  const email = formData.get("email");
+  const identifier = formData.get("identifier");
   const password = formData.get("password");
   const redirectTo = formData.get("redirectTo") || "/dashboard";
 
   // Validación básica
-  if (typeof email !== "string" || !email) {
+  if (typeof identifier !== "string" || !identifier) {
     return json(
-      { error: "El email es requerido" },
+      { error: "El email o nickname es requerido" },
       { status: 400 }
     );
   }
@@ -39,18 +39,17 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  // Validar formato de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  // Validación de longitud mínima para identifier
+  if (identifier.length < 3) {
     return json(
-      { error: "Email inválido" },
+      { error: "El email o nickname debe tener al menos 3 caracteres" },
       { status: 400 }
     );
   }
 
   try {
-    // Intentar iniciar sesión
-    const { accessToken, user } = await signIn({ email, password });
+    // Intentar iniciar sesión con identifier (email o nickname)
+    const { accessToken, user } = await signIn({ identifier, password });
 
     // Crear sesión en Remix
     return createUserSession({
@@ -172,27 +171,28 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Email */}
+            {/* Identifier (Email o Nickname) */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
+              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
+                Email o Nickname
               </label>
               <input 
-                id="email" 
-                name="email" 
-                type="email" 
-                autoComplete="email"
+                id="identifier" 
+                name="identifier" 
+                type="text" 
+                autoComplete="username"
                 className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                placeholder="tu@email.com"
+                placeholder="tu@email.com o tu_nickname"
                 disabled={isSubmitting}
                 required
+                minLength={3}
               />
             </div>
             
             {/* Password */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña
+                Contraseña 111
               </label>
               <div className="relative">
                 <input 
