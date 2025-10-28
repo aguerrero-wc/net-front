@@ -77,7 +77,7 @@ export default function Login() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(https://windowschannel.net/files/1253-2-fondo/portada.jpg)',
+          backgroundImage: 'url(https://mediaweb.sfo3.cdn.digitaloceanspaces.com/wallpaper.jpeg)',
         }}
       ></div>
       
