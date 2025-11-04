@@ -35,7 +35,7 @@ export default function Sidebar({ user }: SidebarProps) {
     : 'U';
   
   const menuItems = [
-    { icon: "🏠", label: "Home", count: null, href: "/dashboard" },
+    { icon: "🏠", label: "Inicio", count: null, href: "/dashboard" },
     { icon: "🤝", label: "Clientes", count: null, href: "/dashboard/clients" },
     { icon: "📦", label: "Winbox", count: null, href: "/dashboard/winboxs" },
     { icon: "📺", label: "Canales", count: null, href: "/dashboard/channels" },
