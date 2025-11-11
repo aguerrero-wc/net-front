@@ -22,7 +22,7 @@ const INITIAL_CONTACT_STATE = {
 export function useContacts(initialContacts: Contact[] = []) {
   const [contactos, setContactos] = useState<Contact[]>(initialContacts);
   const [nuevoContacto, setNuevoContacto] = useState(INITIAL_CONTACT_STATE);
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [mostrarFormulario, setMostrarFormulario] = useState(initialContacts.length === 0);
 
   const agregarContacto = () => {
     if (!nuevoContacto.nombre.trim() || !nuevoContacto.email.trim()) return;

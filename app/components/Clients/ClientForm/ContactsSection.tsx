@@ -7,7 +7,7 @@ interface ContactsSectionProps {
 }
 
 const DEPARTAMENTOS = [
-  "Gerencia General",
+  "Gerencia General ",
   "Marketing",
   "Comunicaciones",
   "IT/Sistemas",

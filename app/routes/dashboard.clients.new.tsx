@@ -2,23 +2,45 @@
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { useState, useEffect } from "react";
+
 import { BasicInfoSection } from "~/components/Clients/ClientForm/BasicInfoSection";
 import { ContactsSection } from "~/components/Clients/ClientForm/ContactsSection";
+import { ServicesSection } from "~/components/Clients/ClientForm/ServicesSection";
+
 import { SuccessModal } from "~/components/shared/SuccessModal";
 import { apiPost } from "~/services/api.server";
-
-import type { Tenant } from "~/types/tenant";
-
-
+// import type { Tenant } from "~/types/tenant";
 
 type ActionData = {
   success?: boolean;
-  client?: Tenant;
+  client?: any;
   errors?: string[];
 };
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
+  
+  // ← Parsear contactos desde el input hidden
+  const contactosJson = formData.get("contactos") as string;
+  let contacts = [];
+  
+  try {
+    const contactosArray = contactosJson ? JSON.parse(contactosJson) : [];
+    
+    // ← Mapear los contactos del frontend al formato del backend
+    contacts = contactosArray.map((contacto: any) => ({
+      type: mapearDepartamentoATipo(contacto.departamento), // Función helper
+      name: contacto.nombre,
+      email: contacto.email,
+      phone: contacto.telefono || undefined,
+      position: contacto.cargo || undefined,
+      department: contacto.departamento || undefined,
+      isPrimary: contacto.esContactoPrincipal || false,
+      isActive: true,
+    }));
+  } catch (error) {
+    console.error("Error al parsear contactos:", error);
+  }
   
   const clientData = {
     name: formData.get("name") as string,
@@ -30,6 +52,7 @@ export async function action({ request }: ActionFunctionArgs) {
     favicon: formData.get("favicon") as string || undefined,
     contactEmail: formData.get("contactEmail") as string,
     contactPhone: formData.get("contactPhone") as string || undefined,
+    contacts, // ← Agregar los contactos aquí
   };
 
   // Validación
@@ -53,10 +76,9 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    const newClient: Tenant = await response.json();
+    const newClient: any = await response.json();
     console.log("✅ Cliente creado:", newClient);
 
-    // ✅ Retornar success en lugar de redirect
     return json<ActionData>({ 
       success: true, 
       client: newClient 
@@ -77,15 +99,29 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
+// ← Helper para mapear departamento a ContactType
+function mapearDepartamentoATipo(departamento: string): string {
+  const mapa: Record<string, string> = {
+    "IT/Sistemas": "sistemas",
+    "Marketing": "comunicaciones",
+    "Comunicaciones": "comunicaciones",
+    "Ventas": "ventas",
+    "Administración": "administrativo",
+    "Recursos Humanos": "administrativo",
+    "Operaciones": "soporte",
+    "Gerencia General": "general",
+  };
+  
+  return mapa[departamento] || "general";
+}
+
 export default function ClientsNew() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
   
-  // ✅ Estado para controlar el modal
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // ✅ Mostrar modal cuando hay éxito
   useEffect(() => {
     if (actionData?.success) {
       setShowSuccessModal(true);
@@ -136,6 +172,7 @@ export default function ClientsNew() {
       <Form method="post">
         <BasicInfoSection />
         <ContactsSection />
+        <ServicesSection />
         
         <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
           <button
@@ -182,7 +219,6 @@ export default function ClientsNew() {
         </div>
       </Form>
 
-      {/* ✅ Modal de éxito */}
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
