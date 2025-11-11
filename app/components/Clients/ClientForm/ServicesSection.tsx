@@ -198,7 +198,7 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
               disabled={!isFormValid()}
               className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-2xl hover:shadow-lg transition-all hover:scale-105 active:scale-95 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Guardar Servicio
+              Agregar Servicio
             </button>
             <button
               type="button"

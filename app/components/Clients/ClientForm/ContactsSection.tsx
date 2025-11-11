@@ -146,7 +146,7 @@ export function ContactsSection({ initialContacts = [] }: ContactsSectionProps) 
               disabled={!nuevoContacto.nombre.trim() || !nuevoContacto.email.trim()}
               className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-2xl hover:shadow-lg transition-all hover:scale-105 active:scale-95 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Guardar Contacto
+              Agregar Contacto
             </button>
             <button
               type="button"

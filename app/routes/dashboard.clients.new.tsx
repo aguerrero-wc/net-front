@@ -50,8 +50,6 @@ export async function action({ request }: ActionFunctionArgs) {
     isActive: formData.get("isActive") === "on",
     logo: formData.get("logo") as string || undefined,
     favicon: formData.get("favicon") as string || undefined,
-    contactEmail: formData.get("contactEmail") as string,
-    contactPhone: formData.get("contactPhone") as string || undefined,
     contacts, // ← Agregar los contactos aquí
   };
 

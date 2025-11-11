@@ -49,7 +49,7 @@ export function BasicInfoSection() {
             placeholder="www.clinicadelcountry.com"
             className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
           />
-          <p className="text-xs text-gray-500 mt-1">Opcional - para plan premium</p>
+          <p className="text-xs text-gray-500 mt-1">Opcional</p>
         </div>
 
         <div className="md:col-span-2">
@@ -117,31 +117,6 @@ export function BasicInfoSection() {
               </svg>
             </button>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email de Contacto <span className="text-[#E6600D]">*</span>
-          </label>
-          <input
-            type="email"
-            name="contactEmail"
-            required
-            placeholder="contacto@ejemplo.com"
-            className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Teléfono de Contacto
-          </label>
-          <input
-            type="tel"
-            name="contactPhone"
-            placeholder="+57 300 123 4567"
-            className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
-          />
         </div>
       </div>
     </SectionCard>
