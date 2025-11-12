@@ -38,16 +38,16 @@ export default function ClientsMain({ initialData }: ClientsMainProps) {
   };
 
   return (
-    <div className="flex-1 bg-gradient-to-br from-orange-50 via-sky-50 to-emerald-50 min-h-screen relative overflow-hidden">
+    <div className="flex-1 bg-gray-100 min-h-screen relative overflow-hidden">
       {/* Elementos decorativos de fondo */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#E6600D] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-sky-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
-      </div>
+      </div> */}
 
       {/* Header */}
-      <ClientsHeader />
+      {/* <ClientsHeader /> */}
 
       {/* Main Content */}
       <div className="p-8 relative z-10">
@@ -60,7 +60,6 @@ export default function ClientsMain({ initialData }: ClientsMainProps) {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gestionar Clientes</h1>
-            <p className="text-gray-600 mt-1">Administra y organiza todos tus clientes institucionales</p>
           </div>
         </div>
 

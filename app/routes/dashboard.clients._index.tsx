@@ -1,10 +1,3 @@
-// import ClientsMain from "~/components/Clients/ClientsMain";
-
-// export default function ContentsIndex() {
-//   return <ClientsMain />;
-// }
-
-// app/routes/dashboard.clients._index.tsx
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { apiGet } from "~/services/api.server";

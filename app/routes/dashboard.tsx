@@ -14,9 +14,9 @@ export default function DashboardLayout() {
   const { user } = useLoaderData<typeof loader>();
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-pink-50">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar user={user} />
-      <main className="flex-1">
+      <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
     </div>

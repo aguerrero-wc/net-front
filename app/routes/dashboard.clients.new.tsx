@@ -179,9 +179,17 @@ export default function ClientsNew() {
 
       {/* Form */}
       <Form method="post">
+        <div className="mb-6">
         <BasicInfoSection />
+        </div>
+
+        <div className="mb-6">
         <ContactsSection />
+        </div>
+        
+        <div className="mb-6">
         <ServicesSection />
+        </div>
         
         <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
           <button

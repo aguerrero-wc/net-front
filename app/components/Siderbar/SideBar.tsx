@@ -35,17 +35,20 @@ export default function Sidebar({ user }: SidebarProps) {
     : 'U';
   
   const menuItems = [
-    { icon: "🏠", label: "Inicio", count: null, href: "/dashboard" },
+    // { icon: "🏠", label: "Inicio", count: null, href: "/dashboard" },
     { icon: "🤝", label: "Clientes", count: null, href: "/dashboard/clients" },
-    { icon: "📦", label: "Winbox", count: null, href: "/dashboard/winboxs" },
-    { icon: "📺", label: "Canales", count: null, href: "/dashboard/channels" },
-    { icon: "🎬", label: "Contenidos", count: null, href: "/dashboard/contents" },
-    { icon: "📰", label: "Noticias", count: null, href: "/dashboard/news" },
-    { icon: "📡", label: "Emisiones especificas", count: 2, href: "/dashboard/emisiones" },
-    { icon: "⚙️", label: "Settings", count: null, href: "/dashboard/settings" },
-    { icon: "📊", label: "Estadisticas", count: null, href: "/dashboard/stats" },
-    { icon: "🔌", label: "APIs", count: null, href: "/dashboard/apis" },
-    { icon: "🔔", label: "Notificaciones", count: 3, href: "/dashboard/notifications" },
+    { icon: "👤", label: "Usuarios", count: null, href: "/dashboard/users" },
+    { icon: "👥", label: "Roles", count: null, href: "/dashboard/roles" },
+    // { icon: "🔒", label: "Permisos", count: null, href: "/dashboard/permissions" },
+    // { icon: "📦", label: "Winbox", count: null, href: "/dashboard/winboxs" },
+    // { icon: "📺", label: "Canales", count: null, href: "/dashboard/channels" },
+    // { icon: "🎬", label: "Contenidos", count: null, href: "/dashboard/contents" },
+    // { icon: "📰", label: "Noticias", count: null, href: "/dashboard/news" },
+    // { icon: "📡", label: "Emisiones especificas", count: 2, href: "/dashboard/emisiones" },
+    // { icon: "⚙️", label: "Settings", count: null, href: "/dashboard/settings" },
+    // { icon: "📊", label: "Estadisticas", count: null, href: "/dashboard/stats" },
+    // { icon: "🔌", label: "APIs", count: null, href: "/dashboard/apis" },
+    // { icon: "🔔", label: "Notificaciones", count: 3, href: "/dashboard/notifications" },
   ];
 
   const isActiveRoute = (href: string) => {
@@ -98,7 +101,7 @@ export default function Sidebar({ user }: SidebarProps) {
       </nav>
 
       {/* Bottom Section - Space Alert */}
-      <div className="p-4 border-t border-white/50">
+      {/* <div className="p-4 border-t border-white/50">
         <div className="backdrop-blur-sm bg-orange-50/80 border border-orange-200/50 rounded-2xl p-4 relative">
           <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors">
             ✕
@@ -118,7 +121,7 @@ export default function Sidebar({ user }: SidebarProps) {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* User Profile con Logout */}
       <div className="p-4 border-t border-white/50">

@@ -220,21 +220,25 @@ export default function ClientEdit() {
 
       {/* Form con datos iniciales */}
       <Form method="post">
-        <BasicInfoSection 
-          initialData={{
-            name: client.name,
-            slug: client.slug,
-            domain: client.domain,
+        <div className="mb-6">
+          <BasicInfoSection 
+            initialData={{
+              name: client.name,
+              slug: client.slug,
+              domain: client.domain,
             description: client.description,
             isActive: client.isActive,
             logo: client.logo,
             favicon: client.favicon,
           }}
         />
-        
-        <ContactsSection initialContacts={initialContacts} />
-        
-        <ServicesSection initialServices={initialServices} />
+        </div>
+        <div className="mb-6">
+          <ContactsSection initialContacts={initialContacts} />
+        </div>
+        <div className="mb-6">
+          <ServicesSection initialServices={initialServices} />
+        </div>
         
         <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
           <button

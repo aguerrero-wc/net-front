@@ -16,7 +16,7 @@ export function ClientsTable({ clients, getClientDisplay, formatDate }: ClientsT
           <thead>
             <tr className="bg-gradient-to-r from-[#E6600D]/10 to-[#FF7A2F]/10 border-b border-white/50">
               <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Cliente</th>
-              <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Servicios</th>
+              <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Servicios Externos</th>
               <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Contactos</th>
               <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Estado</th>
               <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Acciones</th>
@@ -44,7 +44,7 @@ export function ClientsTable({ clients, getClientDisplay, formatDate }: ClientsT
                       </div>
                       <div>
                         <Link
-                          to={`/dashboard/clients/${client.id}`}
+                          to={`/dashboard/clients/${client.id}/edit`}
                           className="text-sm font-semibold text-gray-900 hover:text-[#E6600D] transition-colors"
                         >
                           {client.name}
@@ -95,7 +95,7 @@ export function ClientsTable({ clients, getClientDisplay, formatDate }: ClientsT
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </Link>
-                      <Link
+                      {/* <Link
                         to={`/dashboard/clients/${client.id}`}
                         className="p-2 text-[#E6600D] hover:text-[#CC5509] transition-colors rounded-xl hover:bg-orange-50/50"
                         title="Ver detalles"
@@ -104,7 +104,7 @@ export function ClientsTable({ clients, getClientDisplay, formatDate }: ClientsT
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                      </Link>
+                      </Link> */}
                     </div>
                   </td>
                 </tr>
