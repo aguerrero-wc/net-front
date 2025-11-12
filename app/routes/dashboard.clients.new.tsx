@@ -41,6 +41,16 @@ export async function action({ request }: ActionFunctionArgs) {
   } catch (error) {
     console.error("Error al parsear contactos:", error);
   }
+
+    // ========== PARSEAR SERVICIOS EXTERNOS ==========
+  const externalServicesJson = formData.get("externalServices") as string;
+  let externalServices = [];
+  
+  try {
+    externalServices = externalServicesJson ? JSON.parse(externalServicesJson) : [];
+  } catch (error) {
+    console.error("Error al parsear servicios externos:", error);
+  }
   
   const clientData = {
     name: formData.get("name") as string,
@@ -51,13 +61,14 @@ export async function action({ request }: ActionFunctionArgs) {
     logo: formData.get("logo") as string || undefined,
     favicon: formData.get("favicon") as string || undefined,
     contacts, // ← Agregar los contactos aquí
+    externalServices, // ← Agregar los servicios externos aquí
   };
 
   // Validación
   const errors: string[] = [];
   if (!clientData.name) errors.push("El nombre es requerido");
   if (!clientData.slug) errors.push("El slug es requerido");
-  if (!clientData.contactEmail) errors.push("El email de contacto es requerido");
+  // if (!clientData.contactEmail) errors.push("El email de contacto es requerido");
 
   if (errors.length > 0) {
     return json<ActionData>({ errors }, { status: 400 });

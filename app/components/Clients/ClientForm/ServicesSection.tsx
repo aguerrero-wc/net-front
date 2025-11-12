@@ -60,9 +60,11 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
     mostrarFormulario,
     setMostrarFormulario,
     agregarServicio,
+    editarServicio,
     eliminarServicio,
     toggleServicioActivo,
-    cancelarFormulario
+    cancelarFormulario,
+    servicioEnEdicion,
   } = useServices(initialServices);
 
   // Obtener configuración de campos del servicio seleccionado
@@ -85,6 +87,12 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
   const isFormValid = () => {
     if (!nuevoServicio.serviceType) return false;
     
+    // En modo edición, permitir submit sin llenar campos (mantener credenciales actuales)
+    if (servicioEnEdicion) {
+      return true;
+    }
+    
+    // En modo creación, validar que todos los campos requeridos estén llenos
     const requiredFields = camposActuales.filter(campo => campo.required);
     return requiredFields.every(campo => 
       nuevoServicio.credentials?.[campo.name]?.trim()
@@ -113,14 +121,14 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
         </button>
       }
     >
-      {/* Formulario para nuevo servicio */}
+      {/* Formulario para nuevo/editar servicio */}
       {mostrarFormulario && (
         <div className="backdrop-blur-sm bg-amber-50/60 border border-amber-200/50 rounded-2xl p-6 mb-6">
           <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Nueva Integración
+            {servicioEnEdicion ? 'Editar Integración' : 'Nueva Integración'}
           </h3>
 
           <div className="space-y-4">
@@ -138,13 +146,22 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
                     credentials: {} // Reset credentials cuando cambia el tipo
                   }));
                 }}
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
+                disabled={!!servicioEnEdicion}
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">Seleccionar servicio</option>
                 {TIPOS_SERVICIO.map(tipo => (
                   <option key={tipo} value={tipo}>{tipo}</option>
                 ))}
               </select>
+              {servicioEnEdicion && (
+                <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  No puedes cambiar el tipo de servicio al editar
+                </p>
+              )}
             </div>
 
             {/* Campos dinámicos según el tipo de servicio */}
@@ -157,17 +174,34 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
                   Credenciales de {nuevoServicio.serviceType}
                 </h4>
                 
+                {servicioEnEdicion && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                    <p className="text-xs text-blue-800 flex items-center gap-2">
+                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Las credenciales actuales se mantendrán si dejas los campos vacíos. Solo llena los campos que deseas actualizar.</span>
+                    </p>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {camposActuales.map((campo) => (
-                    <div key={campo.name} className={campo.name.includes('token') || campo.name.includes('secret') ? 'md:col-span-2' : ''}>
+                    <div key={campo.name} className={campo.name.includes('token') || campo.name.includes('secret') || campo.name.includes('Secret') ? 'md:col-span-2' : ''}>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {campo.label} {campo.required && <span className="text-[#E6600D]">*</span>}
+                        {campo.label} 
+                        {campo.required && !servicioEnEdicion && <span className="text-[#E6600D]">*</span>}
+                        {servicioEnEdicion && <span className="text-gray-500 text-xs ml-1">(opcional)</span>}
                       </label>
                       <input
                         type={campo.type}
                         value={nuevoServicio.credentials?.[campo.name] || ''}
                         onChange={(e) => handleCredentialChange(campo.name, e.target.value)}
-                        placeholder={campo.placeholder || `Ingresa ${campo.label.toLowerCase()}`}
+                        placeholder={
+                          servicioEnEdicion 
+                            ? `Dejar vacío para mantener actual` 
+                            : campo.placeholder || `Ingresa ${campo.label.toLowerCase()}`
+                        }
                         className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
                       />
                     </div>
@@ -198,7 +232,7 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
               disabled={!isFormValid()}
               className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-2xl hover:shadow-lg transition-all hover:scale-105 active:scale-95 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Agregar Servicio
+              {servicioEnEdicion ? 'Actualizar Servicio' : 'Agregar Servicio'}
             </button>
             <button
               type="button"
@@ -236,6 +270,19 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
                 </div>
 
                 <div className="flex items-center gap-2 ml-2">
+                  {/* Botón Editar */}
+                  <button
+                    type="button"
+                    onClick={() => editarServicio(servicio)}
+                    className="p-2 text-gray-600 hover:text-amber-600 transition-colors rounded-xl hover:bg-amber-50"
+                    title="Editar servicio"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+
+                  {/* Botón Toggle Estado */}
                   <button
                     type="button"
                     onClick={() => toggleServicioActivo(servicio.id)}
@@ -257,6 +304,7 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
                     )}
                   </button>
 
+                  {/* Botón Eliminar */}
                   <button
                     type="button"
                     onClick={() => eliminarServicio(servicio.id)}
@@ -305,8 +353,8 @@ export function ServicesSection({ initialServices = [] }: ServicesSectionProps) 
       {/* Hidden input para enviar servicios al action */}
       <input 
         type="hidden" 
-        name="servicios" 
-        value={JSON.stringify(servicios)} 
+        name="externalServices" 
+        value={JSON.stringify(servicios.map(({ id, ...rest }) => rest))} 
       />
     </SectionCard>
   );

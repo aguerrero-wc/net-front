@@ -1,6 +1,19 @@
+// app/components/Clients/ClientForm/BasicInfoSection.tsx
 import { SectionCard } from "../shared/SectionCard";
 
-export function BasicInfoSection() {
+interface BasicInfoSectionProps {
+  initialData?: {
+    name?: string;
+    slug?: string;
+    domain?: string;
+    description?: string;
+    isActive?: boolean;
+    logo?: string;
+    favicon?: string;
+  };
+}
+
+export function BasicInfoSection({ initialData }: BasicInfoSectionProps) {
   return (
     <SectionCard
       title="Información Básica"
@@ -20,6 +33,7 @@ export function BasicInfoSection() {
             type="text"
             name="name"
             required
+            defaultValue={initialData?.name}
             placeholder="CDC - Clínica Del Country"
             className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
           />
@@ -33,6 +47,7 @@ export function BasicInfoSection() {
             type="text"
             name="slug"
             required
+            defaultValue={initialData?.slug}
             placeholder="cdc-clinica"
             className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
           />
@@ -46,6 +61,7 @@ export function BasicInfoSection() {
           <input
             type="text"
             name="domain"
+            defaultValue={initialData?.domain}
             placeholder="www.clinicadelcountry.com"
             className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
           />
@@ -59,6 +75,7 @@ export function BasicInfoSection() {
           <textarea
             name="description"
             rows={3}
+            defaultValue={initialData?.description}
             placeholder="Descripción breve del cliente..."
             className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all resize-none"
           />
@@ -70,7 +87,7 @@ export function BasicInfoSection() {
             <input
               type="checkbox"
               name="isActive"
-              defaultChecked
+              defaultChecked={initialData?.isActive ?? true}
               className="w-4 h-4 text-[#E6600D] border-gray-300 rounded focus:ring-[#E6600D]"
             />
             <span className="text-sm text-gray-700">Cliente Activo</span>
@@ -85,7 +102,8 @@ export function BasicInfoSection() {
             <input
               type="text"
               name="logo"
-              placeholder="https://ejemplo.com/logo.png"
+              defaultValue={initialData?.logo}
+              placeholder="https://ejemplo.com/logo.png o 🏥"
               className="flex-1 px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
             />
             <button
@@ -105,6 +123,7 @@ export function BasicInfoSection() {
             <input
               type="text"
               name="favicon"
+              defaultValue={initialData?.favicon}
               placeholder="https://ejemplo.com/favicon.ico"
               className="flex-1 px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6600D]/50 focus:border-transparent transition-all"
             />

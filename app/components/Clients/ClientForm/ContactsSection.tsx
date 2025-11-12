@@ -6,17 +6,17 @@ interface ContactsSectionProps {
   initialContacts?: any[];
 }
 
-const DEPARTAMENTOS = [
-  "Gerencia General ",
-  "Marketing",
-  "Comunicaciones",
-  "IT/Sistemas",
-  "Administración",
-  "Recursos Humanos",
-  "Ventas",
-  "Operaciones",
-  "Otro"
-];
+// const DEPARTAMENTOS = [
+//   "Gerencia General ",
+//   "Marketing",
+//   "Comunicaciones",
+//   "IT/Sistemas",
+//   "Administración",
+//   "Recursos Humanos",
+//   "Ventas",
+//   "Operaciones",
+//   "Otro"
+// ];
 
 export function ContactsSection({ initialContacts = [] }: ContactsSectionProps) {
   const {
